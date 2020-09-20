@@ -71,7 +71,7 @@ png_load(const char *path)
     png_set_bgr(png_ptr);
 
     /* pixman expects pre-multiplied alpha */
-    png_set_alpha_mode(png_ptr, PNG_ALPHA_PREMULTIPLIED, 1.0);
+    //png_set_alpha_mode(png_ptr, PNG_ALPHA_PREMULTIPLIED, 2.2);
 
     /* Tell libpng to expand to RGB(A) when necessary, and tell pixman
      * whether we have alpha or not */
@@ -86,7 +86,7 @@ png_load(const char *path)
             png_set_expand_gray_1_2_4_to_8(png_ptr);
 
         png_set_gray_to_rgb(png_ptr);
-        format = color_type == PNG_COLOR_TYPE_GRAY ? PIXMAN_r8g8b8 : PIXMAN_a8r8g8b8;
+        format = color_type == PNG_COLOR_TYPE_GRAY ? PIXMAN_r8g8b8 : PIXMAN_x8r8g8b8;
         break;
 
     case PNG_COLOR_TYPE_PALETTE:
@@ -96,7 +96,7 @@ png_load(const char *path)
         png_set_palette_to_rgb(png_ptr);
         if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
             png_set_tRNS_to_alpha(png_ptr);
-            format = PIXMAN_a8r8g8b8;
+            format = PIXMAN_x8r8g8b8;
         } else
             format = PIXMAN_r8g8b8;
         break;
@@ -108,7 +108,7 @@ png_load(const char *path)
 
     case PNG_COLOR_TYPE_RGBA:
         LOG_DBG("RGBA");
-        format = PIXMAN_a8r8g8b8;
+        format = PIXMAN_x8r8g8b8;
         break;
     }
 

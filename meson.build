@@ -48,6 +48,7 @@ endif
 
 pixman = dependency('pixman-1')
 png = dependency('libpng')
+jpg = dependency('libjpeg')
 
 wayland_protocols = dependency('wayland-protocols')
 wayland_client = dependency('wayland-client')
@@ -91,8 +92,9 @@ executable(
     'main.c',
     'log.c', 'log.h',
     'png.c', 'png-wbg.h',
+    'jpg.c', 'jpg.h',
     'shm.c', 'shm.h',
     'stride.h',
     wl_proto_src + wl_proto_headers, version,
-    dependencies: [pixman, png, wayland_client, tllist],
+    dependencies: [pixman, png, jpg, wayland_client, tllist],
     install: true)

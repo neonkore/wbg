@@ -21,6 +21,7 @@
 #define LOG_ENABLE_DBG 1
 #include "log.h"
 #include "png-wbg.h"
+#include "jpg.h"
 #include "shm.h"
 
 /* Top-level globals */
@@ -311,7 +312,9 @@ main(int argc, const char *const *argv)
     }
 
     const char *image_path = argv[1];
-    image = png_load(image_path);
+    image = jpg_load(image_path);
+    if (image == NULL)
+        image = png_load(image_path);
     if (image == NULL) {
         LOG_ERR("%s: failed to load", image_path);
         return EXIT_FAILURE;

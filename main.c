@@ -20,9 +20,14 @@
 #define LOG_MODULE "wbg"
 #define LOG_ENABLE_DBG 1
 #include "log.h"
-#include "png-wbg.h"
-#include "jpg.h"
 #include "shm.h"
+
+#if defined(WBG_HAVE_PNG)
+ #include "png-wbg.h"
+#endif
+#if defined(WBG_HAVE_JPG)
+ #include "jpg.h"
+#endif
 
 /* Top-level globals */
 static struct wl_display *display;
@@ -312,9 +317,16 @@ main(int argc, const char *const *argv)
     }
 
     const char *image_path = argv[1];
-    image = jpg_load(image_path);
+    image = NULL;
+
+#if defined(WBG_HAVE_JPG)
+    if (image == NULL)
+        image = jpg_load(image_path);
+#endif
+#if defined(WBG_HAVE_PNG)
     if (image == NULL)
         image = png_load(image_path);
+#endif
     if (image == NULL) {
         LOG_ERR("%s: failed to load", image_path);
         return EXIT_FAILURE;

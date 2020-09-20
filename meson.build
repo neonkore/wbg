@@ -47,8 +47,19 @@ if cc.has_argument('-fmacro-prefix-map=/foo=')
 endif
 
 pixman = dependency('pixman-1')
-png = dependency('libpng')
-jpg = dependency('libjpeg')
+png = dependency('libpng', required: get_option('png'))
+jpg = dependency('libjpeg', required: get_option('jpeg'))
+
+if not png.found() and not jpg.found()
+  error('you must enable at least one image format')
+endif
+
+if png.found()
+  add_project_arguments('-DWBG_HAVE_PNG=1', language: 'c')
+endif
+if jpg.found()
+  add_project_arguments('-DWBG_HAVE_JPG=1', language:'c')
+endif
 
 wayland_protocols = dependency('wayland-protocols')
 wayland_client = dependency('wayland-client')
@@ -87,14 +98,29 @@ version = custom_target(
   output: 'version.h',
   command: [generate_version_sh, meson.project_version(), '@SOURCE_DIR@', '@OUTPUT@'])
 
+image_format_sources = []
+if png.found()
+  image_format_sources += ['png.c', 'png-wbg.h']
+endif
+if jpg.found()
+  image_format_sources += ['jpg.c', 'jpg.h']
+endif
+
 executable(
     'wbg',
     'main.c',
     'log.c', 'log.h',
-    'png.c', 'png-wbg.h',
-    'jpg.c', 'jpg.h',
     'shm.c', 'shm.h',
     'stride.h',
+    image_format_sources,
     wl_proto_src + wl_proto_headers, version,
     dependencies: [pixman, png, jpg, wayland_client, tllist],
     install: true)
+
+summary(
+  {
+    'PNG support': png.found(),
+    'JPEG support': jpg.found(),
+  },
+  bool_yn: true
+)

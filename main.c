@@ -78,11 +78,13 @@ render(struct output *output)
     int img_stride = pixman_image_get_stride(image);
     pixman_format_code_t img_fmt = pixman_image_get_format(image);
 
-    double sx = (double)img_width / width;
-    double sy = (double)img_height / height;
 
     pixman_image_t *pix = pixman_image_create_bits_no_clear(
         img_fmt, img_width, img_height, data, img_stride);
+
+    double sx = (double)img_width / width;
+    double sy = (double)img_height / height;
+
     pixman_f_transform_t t;
     pixman_transform_t t2;
     pixman_f_transform_init_scale(&t, sx, sy);
@@ -92,7 +94,7 @@ render(struct output *output)
     pixman_image_composite32(
         PIXMAN_OP_SRC,
         pix, NULL, buf->pix, 0, 0, 0, 0, 0, 0,
-        width, height);
+        width * scale, height * scale);
 
     pixman_image_unref(pix);
 

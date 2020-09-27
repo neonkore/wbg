@@ -36,3 +36,7 @@ meson --buildtype=release build
 ninja -C build
 sudo ninja -C build install
 ```
+
+By default, PNG and JPEG support is auto-detected. You can force
+disable/enable them with the meson command line options
+`-Dpng=disabled|enabled` and `-Djpeg=disabled|enabled`.

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <poll.h>
@@ -312,7 +313,7 @@ int
 main(int argc, const char *const *argv)
 {
     if (argc < 2) {
-        LOG_ERR("missing required argument: image path");
+        fprintf(stderr, "error: missing required argument: image path\n");
         return EXIT_FAILURE;
     }
 
@@ -328,7 +329,7 @@ main(int argc, const char *const *argv)
         image = png_load(image_path);
 #endif
     if (image == NULL) {
-        LOG_ERR("%s: failed to load", image_path);
+        fprintf(stderr, "error: %s: failed to load\n", image_path);
         return EXIT_FAILURE;
     }
 

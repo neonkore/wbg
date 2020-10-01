@@ -15,20 +15,18 @@
 #include "stride.h"
 
 pixman_image_t *
-png_load(const char *path)
+png_load(FILE *fp, const char *path)
 {
     pixman_image_t *pix = NULL;
 
-    FILE *fp = NULL;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     png_bytepp row_pointers = NULL;
     uint8_t *image_data = NULL;
 
-    /* open file and test for it being a png */
-    if ((fp = fopen(path, "rb")) == NULL) {
-        //LOG_ERRNO("%s: failed to open", path);
-        goto err;
+    if (fseek(fp, 0, SEEK_SET) < 0) {
+        LOG_ERRNO("%s: failed to seek to beginning of file", path);
+        return NULL;
     }
 
     /* Verify PNG header */
@@ -136,8 +134,6 @@ err:
     free(row_pointers);
     if (png_ptr != NULL)
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    if (fp != NULL)
-        fclose(fp);
 
     return pix;
 }

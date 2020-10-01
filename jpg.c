@@ -24,7 +24,7 @@ error_exit(j_common_ptr cinfo)
 }
 
 pixman_image_t *
-jpg_load(const char *path)
+jpg_load(FILE *fp, const char *path)
 {
     struct jpeg_decompress_struct cinfo = {0};
     struct my_error_mgr err_handler;
@@ -32,9 +32,10 @@ jpg_load(const char *path)
     uint8_t *image_data = NULL;
     pixman_image_t *pix = NULL;
 
-    FILE *fp = fopen(path, "rb");
-    if (fp == NULL)
-        goto err;
+    if (fseek(fp, 0, SEEK_SET) < 0) {
+        LOG_ERRNO("%s: failed to seek to beginning of file", path);
+        return NULL;
+    }
 
     cinfo.err = jpeg_std_error(&err_handler.mgr);
     err_handler.mgr.error_exit = &error_exit;
@@ -96,7 +97,6 @@ jpg_load(const char *path)
 
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
-    fclose(fp);
 
     pix = pixman_image_create_bits_no_clear(
         format, width, height, (uint32_t *)image_data, stride);
@@ -113,7 +113,5 @@ err:
         pixman_image_unref(pix);
     free(image_data);
     jpeg_destroy_decompress(&cinfo);
-    if (fp != NULL)
-        fclose(fp);
     return NULL;
 }

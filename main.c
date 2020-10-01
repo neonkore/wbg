@@ -318,24 +318,31 @@ main(int argc, const char *const *argv)
         return EXIT_FAILURE;
     }
 
+    setlocale(LC_CTYPE, "");
+    log_init(LOG_COLORIZE_AUTO, false, LOG_FACILITY_DAEMON, LOG_CLASS_WARNING);
+
     const char *image_path = argv[1];
     image = NULL;
 
-#if defined(WBG_HAVE_JPG)
-    if (image == NULL)
-        image = jpg_load(image_path);
-#endif
-#if defined(WBG_HAVE_PNG)
-    if (image == NULL)
-        image = png_load(image_path);
-#endif
-    if (image == NULL) {
-        fprintf(stderr, "error: %s: failed to load\n", image_path);
+    FILE *fp = fopen(image_path, "rb");
+    if (fp == NULL) {
+        LOG_ERRNO("%s: failed to open", image_path);
         return EXIT_FAILURE;
     }
 
-    setlocale(LC_CTYPE, "");
-    log_init(LOG_COLORIZE_AUTO, false, LOG_FACILITY_DAEMON, LOG_CLASS_WARNING);
+#if defined(WBG_HAVE_JPG)
+    if (image == NULL)
+        image = jpg_load(fp, image_path);
+#endif
+#if defined(WBG_HAVE_PNG)
+    if (image == NULL)
+        image = png_load(fp, image_path);
+#endif
+    if (image == NULL) {
+        fprintf(stderr, "error: %s: failed to load\n", image_path);
+        fclose(fp);
+        return EXIT_FAILURE;
+    }
 
     display = wl_display_connect(NULL);
     assert(display != NULL);
@@ -436,5 +443,6 @@ main(int argc, const char *const *argv)
         pixman_image_unref(image);
     }
     log_deinit();
+    fclose(fp);
     return exit_code;
 }

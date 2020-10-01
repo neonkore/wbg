@@ -97,6 +97,7 @@ render(struct output *output)
     pixman_f_transform_init_scale(&t, sx, sy);
     pixman_transform_from_pixman_f_transform(&t2, &t);
     pixman_image_set_transform(pix, &t2);
+    pixman_image_set_filter(pix, PIXMAN_FILTER_BEST, NULL, 0);
 
     pixman_image_composite32(
         PIXMAN_OP_SRC,

@@ -64,7 +64,7 @@ jpg_load(const char *path)
     LOG_DBG("width=%d, height=%d, stride=%d, components=%d",
             width, height, stride, cinfo.output_components);
 
-    image_data = malloc(height * width * stride);
+    image_data = malloc(height * stride);
     if (image_data == NULL)
         goto err;
 

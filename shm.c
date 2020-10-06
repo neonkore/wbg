@@ -13,24 +13,20 @@
 #include "log.h"
 #include "stride.h"
 
-static tll(struct buffer) buffers;
-
 static void
 buffer_destroy(struct buffer *buf)
 {
     pixman_image_unref(buf->pix);
     wl_buffer_destroy(buf->wl_buf);
     munmap(buf->mmapped, buf->size);
+    free(buf);
 }
 
 static void
 buffer_release(void *data, struct wl_buffer *wl_buffer)
 {
-    //printf("buffer release\n");
     struct buffer *buffer = data;
-    assert(buffer->wl_buf == wl_buffer);
-    assert(buffer->busy);
-    buffer->busy = false;
+    buffer_destroy(buffer);
 }
 
 static const struct wl_buffer_listener buffer_listener = {
@@ -40,54 +36,7 @@ static const struct wl_buffer_listener buffer_listener = {
 struct buffer *
 shm_get_buffer(struct wl_shm *shm, int width, int height, unsigned long cookie)
 {
-    /* Purge buffers marked for purging */
-    tll_foreach(buffers, it) {
-        if (it->item.cookie != cookie)
-            continue;
-
-        if (!it->item.purge)
-            continue;
-
-        assert(!it->item.busy);
-
-        LOG_DBG("cookie=%lx: purging buffer %p (width=%d, height=%d): %zu KB",
-                cookie, &it->item, it->item.width, it->item.height,
-                it->item.size / 1024);
-
-        buffer_destroy(&it->item);
-        tll_remove(buffers, it);
-    }
-
-    tll_foreach(buffers, it) {
-        if (!it->item.busy &&
-            it->item.width == width &&
-            it->item.height == height &&
-            it->item.cookie == cookie)
-        {
-            it->item.busy = true;
-            it->item.purge = false;
-            return &it->item;
-        }
-    }
-
-    /* Purge old buffers associated with this cookie */
-    tll_foreach(buffers, it) {
-        if (it->item.cookie != cookie)
-            continue;
-
-        if (it->item.busy)
-            continue;
-
-        if (it->item.width == width && it->item.height == height)
-            continue;
-
-        LOG_DBG("cookie=%lx: marking buffer %p for purging", cookie, &it->item);
-        it->item.purge = true;
-    }
-
     /*
-     * No existing buffer available. Create a new one by:
-     *
      * 1. open a memory backed "file" with memfd_create()
      * 2. mmap() the memory file, to be used by the pixman image
      * 3. create a wayland shm buffer for the same memory file
@@ -148,25 +97,21 @@ shm_get_buffer(struct wl_shm *shm, int width, int height, unsigned long cookie)
         goto err;
     }
 
-    /* Push to list of available buffers, but marked as 'busy' */
-    tll_push_back(
-        buffers,
-        ((struct buffer){
-            .width = width,
-            .height = height,
-            .stride = stride,
-            .cookie = cookie,
-            .busy = true,
-            .size = size,
-            .mmapped = mmapped,
-            .wl_buf = buf,
-            .pix = pix,
-            })
-        );
+    struct buffer *buffer = malloc(sizeof(*buffer));
+    *buffer = (struct buffer){
+        .width = width,
+        .height = height,
+        .stride = stride,
+        .cookie = cookie,
+        .busy = true,
+        .size = size,
+        .mmapped = mmapped,
+        .wl_buf = buf,
+        .pix = pix,
+    };
 
-    struct buffer *ret = &tll_back(buffers);
-    wl_buffer_add_listener(ret->wl_buf, &buffer_listener, ret);
-    return ret;
+    wl_buffer_add_listener(buffer->wl_buf, &buffer_listener, buffer);
+    return buffer;
 
 err:
     if (pix != NULL)
@@ -181,12 +126,4 @@ err:
         munmap(mmapped, size);
 
     return NULL;
-}
-
-void
-shm_fini(void)
-{
-    tll_foreach(buffers, it)
-        buffer_destroy(&it->item);
-    tll_free(buffers);
 }

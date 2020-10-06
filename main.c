@@ -427,7 +427,6 @@ main(int argc, const char *const *argv)
         output_destroy(&it->item);
     tll_free(outputs);
 
-    shm_fini();
     if (layer_shell != NULL)
         zwlr_layer_shell_v1_destroy(layer_shell);
     if (shm != NULL)

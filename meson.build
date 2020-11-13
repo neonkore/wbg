@@ -1,5 +1,5 @@
 project('wbg', 'c',
-        version: '0.1.0',
+        version: '1.0.0',
         license: 'MIT',
         meson_version: '>=0.53.0',
         default_options: [

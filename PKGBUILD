@@ -1,5 +1,5 @@
 pkgname=wbg
-pkgver=0.0.0
+pkgver=1.0.0
 pkgrel=1
 pkgdesc="Super simple wallpaper application"
 arch=('x86_64' 'aarch64')

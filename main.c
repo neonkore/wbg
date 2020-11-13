@@ -143,7 +143,7 @@ output_destroy(struct output *output)
     if (output->surf != NULL)
         wl_surface_destroy(output->surf);
     if (output->wl_output != NULL)
-        wl_output_destroy(output->wl_output);
+        wl_output_release(output->wl_output);
 }
 
 static void

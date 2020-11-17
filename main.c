@@ -89,8 +89,8 @@ render(struct output *output)
     pixman_image_t *pix = pixman_image_create_bits_no_clear(
         img_fmt, img_width, img_height, data, img_stride);
 
-    double sx = (double)img_width / width;
-    double sy = (double)img_height / height;
+    double sx = (double)img_width / (width * scale);
+    double sy = (double)img_height / (height * scale);
 
     pixman_f_transform_t t;
     pixman_transform_t t2;

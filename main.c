@@ -58,6 +58,7 @@ struct output {
 
     struct wl_surface *surf;
     struct zwlr_layer_surface_v1 *layer;
+    bool configured;
 };
 static tll(struct output) outputs;
 
@@ -119,6 +120,7 @@ layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *surface,
     struct output *output = data;
     output->render_width = w;
     output->render_height = h;
+    output->configured = true;
     zwlr_layer_surface_v1_ack_configure(surface, serial);
     render(output);
 }
@@ -193,6 +195,8 @@ output_scale(void *data, struct wl_output *wl_output, int32_t factor)
 {
     struct output *output = data;
     output->scale = factor;
+    if (output->configured)
+        render(output);
 }
 
 static const struct wl_output_listener output_listener = {

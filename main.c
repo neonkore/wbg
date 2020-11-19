@@ -73,19 +73,11 @@ render(struct output *output)
         shm, width * scale, height * scale, (uintptr_t)(void *)output);
     assert(buf != NULL);
 
-    LOG_INFO("render: w=%d, h=%d", width * scale, height * scale);
-
-    pixman_color_t color = {.red = 0xffff, .green = 0, .blue = 0, .alpha = 0xffff};
-    pixman_image_fill_rectangles(
-        PIXMAN_OP_SRC, buf->pix, &color, 1,
-        &(pixman_rectangle16_t){0, 0, width * scale, height * scale});
-
     uint32_t *data = pixman_image_get_data(image);
     int img_width = pixman_image_get_width(image);
     int img_height = pixman_image_get_height(image);
     int img_stride = pixman_image_get_stride(image);
     pixman_format_code_t img_fmt = pixman_image_get_format(image);
-
 
     pixman_image_t *pix = pixman_image_create_bits_no_clear(
         img_fmt, img_width, img_height, data, img_stride);
@@ -106,6 +98,10 @@ render(struct output *output)
         width * scale, height * scale);
 
     pixman_image_unref(pix);
+
+    LOG_INFO("render: %dx%d (scaled from %dx%d)",
+             width * scale, height * scale,
+             img_width, img_height);
 
     wl_surface_set_buffer_scale(output->surf, scale);
     wl_surface_attach(output->surf, buf->wl_buf, 0, 0);

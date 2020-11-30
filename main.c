@@ -344,6 +344,7 @@ main(int argc, const char *const *argv)
     }
 
     int exit_code = EXIT_FAILURE;
+    int sig_fd = -1;
 
     display = wl_display_connect(NULL);
     if (display == NULL) {
@@ -387,8 +388,7 @@ main(int argc, const char *const *argv)
 
     sigprocmask(SIG_BLOCK, &mask, NULL);
 
-    int sig_fd = signalfd(-1, &mask, 0);
-    if (sig_fd < 0) {
+    if ((sig_fd = signalfd(-1, &mask, 0)) < 0) {
         LOG_ERRNO("failed to create signal FD");
         goto out;
     }

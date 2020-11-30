@@ -60,7 +60,7 @@ shm_get_buffer(struct wl_shm *shm, int width, int height, unsigned long cookie)
     }
 
     /* Total size */
-    const uint32_t stride = stride_for_format_and_width(PIXMAN_a8r8g8b8, width);
+    const uint32_t stride = stride_for_format_and_width(PIXMAN_x8r8g8b8, width);
     size = stride * height;
     if (ftruncate(pool_fd, size) == -1) {
         LOG_ERRNO("failed to truncate SHM pool");
@@ -80,7 +80,7 @@ shm_get_buffer(struct wl_shm *shm, int width, int height, unsigned long cookie)
     }
 
     buf = wl_shm_pool_create_buffer(
-        pool, 0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
+        pool, 0, width, height, stride, WL_SHM_FORMAT_XRGB8888);
     if (buf == NULL) {
         LOG_ERR("failed to create SHM buffer");
         goto err;
@@ -91,7 +91,7 @@ shm_get_buffer(struct wl_shm *shm, int width, int height, unsigned long cookie)
     close(pool_fd); pool_fd = -1;
 
     pix = pixman_image_create_bits_no_clear(
-        PIXMAN_a8r8g8b8, width, height, mmapped, stride);
+        PIXMAN_x8r8g8b8, width, height, mmapped, stride);
     if (pix == NULL) {
         LOG_ERR("failed to create pixman image");
         goto err;

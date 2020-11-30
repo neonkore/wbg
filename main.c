@@ -71,7 +71,9 @@ render(struct output *output)
 
     struct buffer *buf = shm_get_buffer(
         shm, width * scale, height * scale, (uintptr_t)(void *)output);
-    assert(buf != NULL);
+
+    if (buf == NULL)
+        return;
 
     uint32_t *data = pixman_image_get_data(image);
     int img_width = pixman_image_get_width(image);
@@ -181,9 +183,6 @@ output_done(void *data, struct wl_output *wl_output)
 
     LOG_INFO("output: %s %s (%dx%d, scale=%d)",
              output->make, output->model, width, height, scale);
-
-    assert(output->surf != NULL);
-    assert(output->layer != NULL);
 }
 
 static void
@@ -344,18 +343,35 @@ main(int argc, const char *const *argv)
         return EXIT_FAILURE;
     }
 
+    int exit_code = EXIT_FAILURE;
+
     display = wl_display_connect(NULL);
-    assert(display != NULL);
+    if (display == NULL) {
+        LOG_ERR("failed to connect to wayland; no compositor running?");
+        goto out;
+    }
 
     registry = wl_display_get_registry(display);
-    assert(registry != NULL);
+    if (registry == NULL)  {
+        LOG_ERR("failed to get wayland registry");
+        goto out;
+    }
 
     wl_registry_add_listener(registry, &registry_listener, NULL);
     wl_display_roundtrip(display);
 
-    assert(compositor != NULL);
-    assert(shm != NULL);
-    assert(layer_shell != NULL);
+    if (compositor == NULL) {
+        LOG_ERR("no compositor");
+        goto out;
+    }
+    if (shm == NULL) {
+        LOG_ERR("no shared memory buffers interface");
+        goto out;
+    }
+    if (layer_shell == NULL) {
+        LOG_ERR("no layer shell interface");
+        goto out;
+    }
 
     wl_display_roundtrip(display);
 
@@ -372,9 +388,10 @@ main(int argc, const char *const *argv)
     sigprocmask(SIG_BLOCK, &mask, NULL);
 
     int sig_fd = signalfd(-1, &mask, 0);
-    assert(sig_fd >= 0);
-
-    int exit_code = EXIT_FAILURE;
+    if (sig_fd < 0) {
+        LOG_ERRNO("failed to create signal FD");
+        goto out;
+    }
 
     while (true) {
         wl_display_flush(display);

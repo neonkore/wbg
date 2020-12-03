@@ -212,6 +212,40 @@ static const struct wl_shm_listener shm_listener = {
     .format = &shm_format,
 };
 
+static void
+add_surface_to_output(struct output *output)
+{
+    if (compositor == NULL || layer_shell == NULL)
+        return;
+
+    if (output->surf != NULL)
+        return;
+
+    struct wl_surface *surf = wl_compositor_create_surface(compositor);
+
+    /* Default input region is 'infinite', while we want it to be empty */
+    struct wl_region *empty_region = wl_compositor_create_region(compositor);
+    wl_surface_set_input_region(surf, empty_region);
+    wl_region_destroy(empty_region);
+
+    struct zwlr_layer_surface_v1 *layer = zwlr_layer_shell_v1_get_layer_surface(
+        layer_shell, surf, output->wl_output,
+        ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, "wallpaper");
+
+    zwlr_layer_surface_v1_set_exclusive_zone(layer, -1);
+    zwlr_layer_surface_v1_set_anchor(layer,
+                                     ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
+                                     ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT |
+                                     ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
+                                     ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
+
+    output->surf = surf;
+    output->layer = layer;
+
+    zwlr_layer_surface_v1_add_listener(layer, &layer_surface_listener, output);
+    wl_surface_commit(surf);
+}
+
 static bool
 verify_iface_version(const char *iface, uint32_t version, uint32_t wanted)
 {
@@ -254,30 +288,14 @@ handle_global(void *data, struct wl_registry *registry,
         struct wl_output *wl_output = wl_registry_bind(
             registry, name, &wl_output_interface, required);
 
-        struct wl_surface *surf = wl_compositor_create_surface(compositor);
+        tll_push_back(
+            outputs, ((struct output){
+                .wl_output = wl_output, .wl_name = name,
+                .surf = NULL, .layer = NULL}));
 
-        /* Default input region is 'infinite', while we want it to be empty */
-        struct wl_region *empty_region =wl_compositor_create_region(compositor);        
-        wl_surface_set_input_region(surf, empty_region);
-        wl_region_destroy(empty_region);
-
-        struct zwlr_layer_surface_v1 *layer = zwlr_layer_shell_v1_get_layer_surface(
-            layer_shell, surf, wl_output, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, "wallpaper");
-
-        zwlr_layer_surface_v1_set_exclusive_zone(layer, -1);
-        zwlr_layer_surface_v1_set_anchor(layer,
-                                         ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
-                                         ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT |
-                                         ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
-                                         ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
-
-        tll_push_back(outputs, ((struct output){
-                    .wl_output = wl_output, .wl_name = name, .surf = surf, .layer = layer}));
         struct output *output = &tll_back(outputs);
-
         wl_output_add_listener(wl_output, &output_listener, output);
-        zwlr_layer_surface_v1_add_listener(layer, &layer_surface_listener, output);
-        wl_surface_commit(surf);
+        add_surface_to_output(output);
     }
 
     else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
@@ -288,7 +306,6 @@ handle_global(void *data, struct wl_registry *registry,
         layer_shell = wl_registry_bind(
             registry, name, &zwlr_layer_shell_v1_interface, required);
     }
-
 }
 
 static void
@@ -373,6 +390,9 @@ main(int argc, const char *const *argv)
         LOG_ERR("no layer shell interface");
         goto out;
     }
+
+    tll_foreach(outputs, it)
+        add_surface_to_output(&it->item);
 
     wl_display_roundtrip(display);
 

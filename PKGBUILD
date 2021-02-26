@@ -6,7 +6,7 @@ arch=('x86_64' 'aarch64')
 url=https://codeberg.org/dnkl/wbg
 license=(mit)
 makedepends=('meson' 'ninja' 'tllist>=1.0.1')
-depends=('wayland' 'libjpeg-turbo' 'libpng')
+depends=('wayland' 'pixman' 'libjpeg-turbo' 'libpng')
 source=()
 
 pkgver() {

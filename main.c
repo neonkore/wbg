@@ -423,7 +423,7 @@ main(int argc, const char *const *argv)
         int ret = poll(fds, sizeof(fds) / sizeof(fds[0]), -1);
 
         if (ret < 0) {
-            if (ret == EINTR)
+            if (errno == EINTR)
                 continue;
 
             LOG_ERRNO("failed to poll");

@@ -42,3 +42,9 @@ sudo ninja -C build install
 By default, PNG and JPEG support is auto-detected. You can force
 disable/enable them with the meson command line options
 `-Dpng=disabled|enabled` and `-Djpeg=disabled|enabled`.
+
+
+## Derivative work
+
+* https://codeberg.org/droc12345/wbg - adds support for directories
+  with images, random, timer flags.

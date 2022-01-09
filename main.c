@@ -435,8 +435,12 @@ main(int argc, const char *const *argv)
             break;
         }
 
-        if (fds[0].revents & POLLIN)
-            wl_display_dispatch(display);
+        if (fds[0].revents & POLLIN) {
+            if (wl_display_dispatch(display) < 0) {
+                LOG_ERRNO("failed to dispatch Wayland events");
+                break;
+            }
+        }
 
         if (fds[1].revents & POLLHUP)
             abort();

@@ -116,10 +116,22 @@ layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *surface,
                         uint32_t serial, uint32_t w, uint32_t h)
 {
     struct output *output = data;
+    zwlr_layer_surface_v1_ack_configure(surface, serial);
+
+    /* If the size of the last committed buffer has not change, do not
+     * render a new buffer because it will be identical to the old one. */
+    /* TODO: should we check the scale? */
+    if (output->configured &&
+        output->render_width == w &&
+        output->render_height == h)
+    {
+        wl_surface_commit(output->surf);
+        return;
+    }
+
     output->render_width = w;
     output->render_height = h;
     output->configured = true;
-    zwlr_layer_surface_v1_ack_configure(surface, serial);
     render(output);
 }
 

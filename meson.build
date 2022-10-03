@@ -49,8 +49,9 @@ endif
 pixman = dependency('pixman-1')
 png = dependency('libpng', required: get_option('png'))
 jpg = dependency('libjpeg', required: get_option('jpeg'))
+webp = dependency('libwebp', required: get_option('webp'))
 
-if not png.found() and not jpg.found()
+if not png.found() and not jpg.found() and not webp.found()
   error('you must enable at least one image format')
 endif
 
@@ -59,6 +60,9 @@ if png.found()
 endif
 if jpg.found()
   add_project_arguments('-DWBG_HAVE_JPG=1', language:'c')
+endif
+if webp.found()
+  add_project_arguments('-DWBG_HAVE_WEBP=1', language:'c')
 endif
 
 wayland_protocols = dependency('wayland-protocols')
@@ -106,6 +110,9 @@ endif
 if jpg.found()
   image_format_sources += ['jpg.c', 'jpg.h']
 endif
+if webp.found()
+  image_format_sources += ['webp.c', 'webp.h']
+endif
 
 executable(
     'wbg',
@@ -115,13 +122,14 @@ executable(
     'stride.h',
     image_format_sources,
     wl_proto_src + wl_proto_headers, version,
-    dependencies: [pixman, png, jpg, wayland_client, tllist],
+    dependencies: [pixman, png, jpg, webp, wayland_client, tllist],
     install: true)
 
 summary(
   {
     'PNG support': png.found(),
     'JPEG support': jpg.found(),
+    'WebP support': webp.found(),
   },
   bool_yn: true
 )

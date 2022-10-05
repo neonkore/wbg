@@ -20,8 +20,9 @@ wallpaper _may_ be added in the future.
 * wayland (_client_ and _cursor_ libraries)
 * libpng (optional)
 * libjpeg (optional)
+* libwebp (optional)
 
-Note that at least one of _libpng_ and _libjpeg_ is required.
+Note that at least one of _libpng_, _libjpeg_ and _libwebp_ is required.
 
 
 ### Compile time
@@ -39,9 +40,10 @@ ninja -C build
 sudo ninja -C build install
 ```
 
-By default, PNG and JPEG support is auto-detected. You can force
+By default, PNG, JPEG and WebP support is auto-detected. You can force
 disable/enable them with the meson command line options
-`-Dpng=disabled|enabled` and `-Djpeg=disabled|enabled`.
+`-Dpng=disabled|enabled`, `-Djpeg=disabled|enabled` and
+`-Dwebp=disabled|enabled`.
 
 
 ## Derivative work

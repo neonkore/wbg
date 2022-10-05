@@ -35,8 +35,7 @@ webp_load(FILE *fp, const char *path)
     }
 
     clearerr(fp);
-    fread(file_data, image_size, 1, fp);
-    if (ferror(fp)) {
+    if (fread(file_data, image_size, 1, fp) != image_size && ferror(fp)) {
         LOG_ERRNO("%s: failed to read", path);
         goto out;
     }

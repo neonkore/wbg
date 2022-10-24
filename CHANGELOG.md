@@ -1,17 +1,15 @@
 # Changelog
 
-* [Unreleased](#unreleased)
+* [1.1.0](#1-1-0)
 
 
-## Unreleased
+## 1.1.0
+
 ### Added
 
 * webp support
 
 
-### Changed
-### Deprecated
-### Removed
 ### Fixed
 
 * meson: can’t use `SOURCE_DIR` in `custom_targets()`.
@@ -19,5 +17,6 @@
 * Don’t re-render frame on same-size configure events
 
 
-### Security
 ### Contributors
+
+*  Leonardo Hernández

@@ -22,6 +22,7 @@
 #define LOG_ENABLE_DBG 0
 #include "log.h"
 #include "shm.h"
+#include "version.h"
 
 #if defined(WBG_HAVE_PNG)
  #include "png-wbg.h"
@@ -351,6 +352,8 @@ main(int argc, const char *const *argv)
 
     setlocale(LC_CTYPE, "");
     log_init(LOG_COLORIZE_AUTO, false, LOG_FACILITY_DAEMON, LOG_CLASS_WARNING);
+
+    LOG_INFO("%s", WBG_VERSION);
 
     const char *image_path = argv[1];
     image = NULL;

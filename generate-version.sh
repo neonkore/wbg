@@ -22,7 +22,7 @@ else
     new_version="${default_version}"
 fi
 
-new_version="#define FUZZEL_VERSION \"${new_version}\""
+new_version="#define WBG_VERSION \"${new_version}\""
 
 if [ -f "${out_file}" ]; then
     old_version=$(cat "${out_file}")

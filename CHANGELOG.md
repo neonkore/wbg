@@ -10,6 +10,10 @@
 ### Deprecated
 ### Removed
 ### Fixed
+
+* Respect the `layer_surface::closed()` event.
+
+
 ### Security
 ### Contributors
 

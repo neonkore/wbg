@@ -140,8 +140,31 @@ layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *surface,
 }
 
 static void
+output_layer_destroy(struct output *output)
+{
+    if (output->layer != NULL)
+        zwlr_layer_surface_v1_destroy(output->layer);
+    if (output->surf != NULL)
+        wl_surface_destroy(output->surf);
+
+    output->layer = NULL;
+    output->surf = NULL;
+    output->configured = false;
+}
+
+static void
 layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *surface)
 {
+    struct output *output = data;
+
+    /* Don’t trust ‘output’ to be valid, in case compositor destroyed
+     * if before calling closed() */
+    tll_foreach(outputs, it) {
+        if (&it->item == output) {
+            output_layer_destroy(output);
+            break;
+        }
+    }
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
@@ -152,14 +175,14 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 static void
 output_destroy(struct output *output)
 {
-    free(output->make);
-    free(output->model);
-    if (output->layer != NULL)
-        zwlr_layer_surface_v1_destroy(output->layer);
-    if (output->surf != NULL)
-        wl_surface_destroy(output->surf);
+    output_layer_destroy(output);
+
     if (output->wl_output != NULL)
         wl_output_release(output->wl_output);
+    output->wl_output = NULL;
+
+    free(output->make);
+    free(output->model);
 }
 
 static void

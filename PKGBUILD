@@ -8,6 +8,7 @@ license=(mit)
 makedepends=('meson' 'ninja' 'wayland-protocols' 'tllist>=1.0.1')
 depends=('wayland' 'pixman' 'libjpeg-turbo' 'libpng' 'libwebp')
 source=()
+changelog=CHANGELOG.md
 
 pkgver() {
   cd ../.git &> /dev/null && git describe --tags --long | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' ||

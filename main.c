@@ -267,6 +267,11 @@ add_surface_to_output(struct output *output)
     wl_surface_set_input_region(surf, empty_region);
     wl_region_destroy(empty_region);
 
+    /* Surface is fully opaque (i.e. non-transparent) */
+    struct wl_region *opaque_region = wl_compositor_create_region(compositor);
+    wl_surface_set_opaque_region(surf, opaque_region);
+    wl_region_destroy(opaque_region);
+
     struct zwlr_layer_surface_v1 *layer = zwlr_layer_shell_v1_get_layer_surface(
         layer_shell, surf, output->wl_output,
         ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, "wallpaper");

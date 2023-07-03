@@ -6,6 +6,10 @@
 
 ## Unreleased
 ### Added
+
+* We now hint to the compositor that the background is fully opaque.
+
+
 ### Changed
 ### Deprecated
 ### Removed
